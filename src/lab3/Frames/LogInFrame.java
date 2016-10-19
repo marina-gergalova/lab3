@@ -19,7 +19,6 @@ public class LogInFrame extends JFrame {
     private static final String FRAME_TITLE = "Registration";
     private static final int WIDTH = 500;
     private static final int HEIGHT = 200;
-    //public static final int SERVER_PORT = 4567;
 
     private JTextField name;
     private JTextField password;
@@ -31,18 +30,17 @@ public class LogInFrame extends JFrame {
         super(FRAME_TITLE);
         setSize(WIDTH, HEIGHT);
         Toolkit kit = Toolkit.getDefaultToolkit();
-// Отцентрировать окно приложения на экране
         setLocation((kit.getScreenSize().width - WIDTH) / 2,
                 (kit.getScreenSize().height - HEIGHT) / 2);
 
         JLabel labelForName = new JLabel("name:");
-        name = new JTextField("", 10);
+        name = new JTextField("Marina", 9);
         name.setMaximumSize(name.getPreferredSize());
         JLabel labelForPassword = new JLabel("password:");
-        password = new JTextField("", 10);
+        password = new JTextField("1q", 10);
         password.setMaximumSize(password.getPreferredSize());
         JLabel labelForIPAdress = new JLabel("IP adress:");
-        iPAdress = new JTextField("", 10);
+        iPAdress = new JTextField("127.0.0.1", 10);
         iPAdress.setMaximumSize(iPAdress.getPreferredSize());
         JLabel labelForPort = new JLabel("port");
         port = new JTextField("4488", 7);
@@ -91,6 +89,7 @@ public class LogInFrame extends JFrame {
 
 
         JButton buttonLogIn = new JButton("Log In");
+        final LogInFrame frame = this;
         buttonLogIn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ev) {
 
@@ -111,8 +110,12 @@ public class LogInFrame extends JFrame {
                         name.setText("");
                         password.setText("");
                     } else {
-                        name.setText(loginUser + 1);
-                        password.setText(passwordUser);
+                        frame.setVisible(false);
+                        ChatFrame frameOfChat = new ChatFrame();
+                        frameOfChat.setVisible(true);
+                        frame.dispose();
+                        //name.setText(loginUser + 1);
+                        //password.setText(passwordUser);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

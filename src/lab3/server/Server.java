@@ -23,9 +23,20 @@ public class Server {
         put("Marina", "1q");
         put("Hleb", "1q");
     }};
+    private static int countUser = registredUsers.size();
+    public static final String[] userNames = new String[countUser];
 
 
     public static void main(String[] args) throws IOException {
+
+        for (int i=0; i<3; i++) {
+            for (String e : registredUsers.keySet()) {
+                userNames[i] = e;
+                i++;
+            }
+        }
+
+
         ServerSocket serverSocket = new ServerSocket(PORT);
         try {
             while (true) {
@@ -41,9 +52,16 @@ public class Server {
                         if (registredUsers.get(name) != null) {
                             if (registredUsers.get(name).equals(password)) {
                                 outSocket.writeUTF(userFound);
-                            }
-                        } else
-                            outSocket.writeUTF(USER_NOT_FOUND);
+                                if (action == secondAction) {
+                                    /////
+                                    ///////
+                                    ///
+                                    ////
+                                }
+
+                            } else
+                                outSocket.writeUTF(USER_NOT_FOUND);
+                        }
                     }
                 } finally {
                     socket.close();
