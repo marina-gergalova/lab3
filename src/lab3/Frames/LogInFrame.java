@@ -4,10 +4,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.net.InetAddress;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
-import java.util.Scanner;
 
 import static lab3.server.Server.USER_NOT_FOUND;
 
@@ -87,7 +87,6 @@ public class LogInFrame extends JFrame {
         hboxVariables.add(hboxVariablesP);
         hboxVariables.add(Box.createVerticalGlue());
 
-
         JButton buttonLogIn = new JButton("Log In");
         final LogInFrame frame = this;
         buttonLogIn.addActionListener(new ActionListener() {
@@ -111,11 +110,9 @@ public class LogInFrame extends JFrame {
                         password.setText("");
                     } else {
                         frame.setVisible(false);
-                        ChatFrame frameOfChat = new ChatFrame();
+                        ChatFrame frameOfChat = new ChatFrame(loginUser, iPAdress.getText(), portServer);
                         frameOfChat.setVisible(true);
                         frame.dispose();
-                        //name.setText(loginUser + 1);
-                        //password.setText(passwordUser);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -128,7 +125,6 @@ public class LogInFrame extends JFrame {
                 }
             }
         });
-
 
         Box hboxButton = Box.createHorizontalBox();
         hboxButton.add(Box.createHorizontalGlue());

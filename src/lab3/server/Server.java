@@ -19,7 +19,7 @@ public class Server {
     public static final String USER_NOT_FOUND = "User not found";
     public static final String userFound = "User found";
     public static final int PORT = 4488;
-    private static final Map<String, String> registredUsers = new HashMap(){{
+    private static final Map<String, String> registredUsers = new HashMap() {{
         put("Marina", "1q");
         put("Hleb", "1q");
     }};
@@ -29,13 +29,12 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
 
-        for (int i=0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             for (String e : registredUsers.keySet()) {
                 userNames[i] = e;
                 i++;
             }
         }
-
 
         ServerSocket serverSocket = new ServerSocket(PORT);
         try {
@@ -45,22 +44,29 @@ public class Server {
                     DataInputStream inSocket = new DataInputStream(socket.getInputStream());
                     DataOutputStream outSocket = new DataOutputStream(socket.getOutputStream());
                     int action = inSocket.readInt();
-                    String name = inSocket.readUTF();
-                    String password = inSocket.readUTF();
 
                     if (action == firstAction) {
+                        String name = inSocket.readUTF();
+                        String password = inSocket.readUTF();
                         if (registredUsers.get(name) != null) {
                             if (registredUsers.get(name).equals(password)) {
                                 outSocket.writeUTF(userFound);
-                                if (action == secondAction) {
-                                    /////
-                                    ///////
-                                    ///
-                                    ////
-                                }
-
                             } else
                                 outSocket.writeUTF(USER_NOT_FOUND);
+                        } else
+                            outSocket.writeUTF(USER_NOT_FOUND);
+                    }
+
+                    if (action == secondAction) {
+                        String userTo = inSocket.readUTF();
+                        String userFrom = inSocket.readUTF();
+                        String messageText = inSocket.readUTF();
+                        if (userTo != null) {
+                            if (messageText != null) {
+                                outSocket.writeUTF(userFrom);
+                                outSocket.writeUTF(userTo);
+                                outSocket.writeUTF(messageText);
+                            }
                         }
                     }
                 } finally {
