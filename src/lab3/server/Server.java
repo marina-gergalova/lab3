@@ -62,11 +62,9 @@ public class Server {
                         String userFrom = inSocket.readUTF();
                         String messageText = inSocket.readUTF();
                         if (userTo != null) {
-                            if (messageText != null) {
                                 outSocket.writeUTF(userFrom);
                                 outSocket.writeUTF(userTo);
                                 outSocket.writeUTF(messageText);
-                            }
                         }
                     }
                 } finally {

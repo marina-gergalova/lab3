@@ -15,6 +15,7 @@ public class ActiveUserComponent extends JScrollPane {
         activeUsersComponent.setListData(activeUsers);
         activeUsersComponent.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         ((JPanel) this.getViewport().getView()).add(activeUsersComponent);
+        activeUsersComponent.setSelectedIndex(0);
     }
 
     public String getSelectedUser() {

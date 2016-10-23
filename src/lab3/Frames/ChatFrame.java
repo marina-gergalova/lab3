@@ -31,6 +31,8 @@ public class ChatFrame extends JFrame {
         dialog.append("Диалог с пользователем");
         dialog.append("\n");
         dialog.setMaximumSize(dialog.getPreferredSize());
+        JScrollPane scrollPane = new JScrollPane(dialog);
+        scrollPane.setViewportView(dialog);
 
         message = new JTextArea(5, 35);
         message.setLineWrap(true);
@@ -68,6 +70,7 @@ public class ChatFrame extends JFrame {
                     messageText += " " + socketIn.readUTF();
                     dialog.append(messageText + "\n");
                     message.setText("");
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -82,7 +85,7 @@ public class ChatFrame extends JFrame {
 
         Box hboxLeft = Box.createVerticalBox();
         hboxLeft.add(Box.createVerticalGlue());
-        hboxLeft.add(dialog);
+        hboxLeft.add(scrollPane);
         hboxLeft.add(Box.createVerticalStrut(5));
         hboxLeft.add(message);
         hboxLeft.add(Box.createVerticalGlue());
