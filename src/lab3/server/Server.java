@@ -16,25 +16,18 @@ public class Server {
     public static final int firstAction = 1;
     public static final int secondAction = 2;
     public static final int thirdAction = 3;
+    public static final int fourthAction = 4;
     public static final String USER_NOT_FOUND = "User not found";
     public static final String userFound = "User found";
     public static final int PORT = 4488;
-    private static final Map<String, String> registredUsers = new HashMap() {{
+
+    private static final Map<String, String> registeredUsers = new HashMap<String, String>() {{
         put("Marina", "1q");
         put("Hleb", "1q");
     }};
-    private static int countUser = registredUsers.size();
-    public static final String[] userNames = new String[countUser];
 
 
     public static void main(String[] args) throws IOException {
-
-        for (int i = 0; i < 3; i++) {
-            for (String e : registredUsers.keySet()) {
-                userNames[i] = e;
-                i++;
-            }
-        }
 
         ServerSocket serverSocket = new ServerSocket(PORT);
         try {
@@ -48,8 +41,8 @@ public class Server {
                     if (action == firstAction) {
                         String name = inSocket.readUTF();
                         String password = inSocket.readUTF();
-                        if (registredUsers.get(name) != null) {
-                            if (registredUsers.get(name).equals(password)) {
+                        if (registeredUsers.get(name) != null) {
+                            if (registeredUsers.get(name).equals(password)) {
                                 outSocket.writeUTF(userFound);
                             } else
                                 outSocket.writeUTF(USER_NOT_FOUND);
@@ -62,9 +55,18 @@ public class Server {
                         String userFrom = inSocket.readUTF();
                         String messageText = inSocket.readUTF();
                         if (userTo != null) {
-                                outSocket.writeUTF(userFrom);
-                                outSocket.writeUTF(userTo);
-                                outSocket.writeUTF(messageText);
+                            outSocket.writeUTF(userFrom);
+                            outSocket.writeUTF(userTo);
+                            outSocket.writeUTF(messageText);
+                        }
+                    }
+
+                    if (action == fourthAction) {
+                        outSocket.writeInt(registeredUsers.size());
+                        if (registeredUsers.size() != 0) {
+                            for (String name : registeredUsers.keySet()) {
+                                outSocket.writeUTF(name);
+                            }
                         }
                     }
                 } finally {
