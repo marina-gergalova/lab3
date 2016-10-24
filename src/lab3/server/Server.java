@@ -5,7 +5,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -25,6 +27,7 @@ public class Server {
         put("Marina", "1q");
         put("Hleb", "1q");
     }};
+    private static Map<String, LinkedHashMap<String, ArrayList<String>>> historyUnreadMessages = new HashMap<>();
 
 
     public static void main(String[] args) throws IOException {
@@ -59,6 +62,11 @@ public class Server {
                             outSocket.writeUTF(userTo);
                             outSocket.writeUTF(messageText);
                         }
+                            if (hasUserToUnreadMessages(userTo)) {
+                                historyUnreadMessages.put(userTo, addUnreadMessageHistory(userTo, userFrom, messageText));
+                            } else {
+                                historyUnreadMessages.put(userTo, createNewHistoryOneUser(userFrom, messageText));
+                            }
                     }
 
                     if (action == fourthAction) {
@@ -76,5 +84,35 @@ public class Server {
         } finally {
             serverSocket.close();
         }
+    }
+
+    private static boolean hasUserToUnreadMessages(String userTo)
+    {
+            if (historyUnreadMessages.containsKey(userTo)) {
+                return true;
+            } else
+                return false;
+    }
+
+    private static LinkedHashMap<String, ArrayList<String>> createNewHistoryOneUser(String userFrom, String messageText) {
+        LinkedHashMap<String, ArrayList<String>> history = new LinkedHashMap();
+        ArrayList<String> unreadMessages = new ArrayList<>();
+        unreadMessages.add(messageText);
+        history.put(userFrom, unreadMessages);
+        return history;
+    }
+
+    private static LinkedHashMap<String, ArrayList<String>> addUnreadMessageHistory(String userTo, String userFrom, String messageText) {
+        LinkedHashMap<String, ArrayList<String>> history = new LinkedHashMap(historyUnreadMessages.get(userTo));
+        if (history == null) {
+            ArrayList<String> unreadMessages = new ArrayList<>();
+            unreadMessages.add(messageText);
+            history.put(userFrom, unreadMessages);
+        } else {
+            ArrayList<String> unreadMessages = new ArrayList<>(history.get(userFrom));
+            unreadMessages.add(messageText);
+            history.put(userFrom, unreadMessages);
+        }
+        return history;
     }
 }

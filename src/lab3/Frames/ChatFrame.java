@@ -83,36 +83,38 @@ public class ChatFrame extends JFrame {
                 String adressServer = iPAddress;
                 int portServer = activePortServer;
 
-                Socket socket = null;
-                try {
-                    socket = new Socket(adressServer, portServer);
-                    DataInputStream socketIn = new DataInputStream(socket.getInputStream());
-                    DataOutputStream socketOut = new DataOutputStream(socket.getOutputStream());
-                    socketOut.writeInt(2);
-                    socketOut.writeUTF(userTo);
-                    socketOut.writeUTF(userFrom);
-                    socketOut.writeUTF(messageText);
-
-                    messageText = socketIn.readUTF();
-                    messageText += " to " + socketIn.readUTF() + ":";
-                    messageText += " " + socketIn.readUTF();
-                    dialog.append(messageText + "\n");
-                    message.setText("");
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
+                if (!userFrom.equals(userTo)) {
+                    Socket socket = null;
                     try {
-                        socket.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
+                        socket = new Socket(adressServer, portServer);
+                        DataOutputStream socketOut = new DataOutputStream(socket.getOutputStream());
+                        socketOut.writeInt(2);
+                        socketOut.writeUTF(userTo);
+                        socketOut.writeUTF(userFrom);
+                        socketOut.writeUTF(messageText);
 
-                if (hasUserList(userTo)) {
-                    historyMessagess.put(userTo, addMessageHistory(userTo, messageText));
+                        dialog.append(messageText + "\n");
+                        message.setText("");
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            socket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 } else {
-                    historyMessagess.put(userTo, createNewUser(messageText, activeUserComponent));
+                    if (!hasUserList(userTo)) {
+                        historyMessagess.put(userTo, createNewUser(messageText, activeUserComponent));
+                        dialog.append(messageText + "\n");
+                        message.setText("");
+                    } else {
+                        historyMessagess.put(userTo, addMessageHistory(userTo, messageText));
+                        dialog.append(messageText + "\n");
+                        message.setText("");
+                    }
                 }
             }
         });
