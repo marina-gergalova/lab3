@@ -31,9 +31,19 @@ public class ChatFrame extends JFrame {
     private JTextArea message;
     private JTextArea dialog;
     private Map<String, List<String>> historyMessagess = new HashMap<>();
+    private Map<String, List<String>> historyMyMessagess = new HashMap<>();
 
     public ChatFrame(String name, String iPAddress, int activePortServer) {
         super("Chat");
+
+        List<String> list1 = new ArrayList<>();
+        list1.add(0, "" );
+//        List<String> list2 = new ArrayList<>();
+//       list1.add(0, "Диалог с пользователем Marina" );
+        historyMessagess.put("Hleb", list1);
+        historyMessagess.put("Marina", list1);
+        historyMyMessagess.put("Hleb", list1);
+        historyMyMessagess.put("Marina", list1);
         setSize(WIDTH, HEIGHT);
         Toolkit kit = Toolkit.getDefaultToolkit();
         setLocation((kit.getScreenSize().width - WIDTH) / 2,
@@ -52,20 +62,26 @@ public class ChatFrame extends JFrame {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 String userName = activeUserComponent.getSelectedUser();
-                dialog.setText("");
-                if (historyMessagess.get(userName) != null) {
+                dialog.setText("Диалог с пользователем "+activeUserComponent.getSelectedUser()+"\n");
+                if (!name.equals(userName)) {
+                    if (historyMessagess.get(userName) != null) {
                         for (int i = 0; i < historyMessagess.get(userName).size(); i++) {
                             dialog.append(historyMessagess.get(userName).get(i) + "\n");
                         }
+                    } else {
+                        createNewUser(userName);
+                    }
                 } else {
-                    createNewUser(userName, activeUserComponent);
+                        for (int i = 0; i < historyMyMessagess.get(name).size(); i++) {
+                            dialog.append(historyMyMessagess.get(name).get(i) + "\n");
+                    }
                 }
             }
         });
 
         dialog = new JTextArea(20, 35);
         dialog.setLineWrap(true);
-        dialog.append("");
+        dialog.setText(""+"\n");
         dialog.setMaximumSize(dialog.getPreferredSize());
         JScrollPane scrollPane = new JScrollPane(dialog);
         scrollPane.setViewportView(dialog);
@@ -93,6 +109,7 @@ public class ChatFrame extends JFrame {
                         socketOut.writeUTF(userFrom);
                         socketOut.writeUTF(messageText);
 
+                        historyMessagess.put(userTo, addMessageHistory(userTo, messageText));
                         dialog.append(messageText + "\n");
                         message.setText("");
 
@@ -106,15 +123,9 @@ public class ChatFrame extends JFrame {
                         }
                     }
                 } else {
-                    if (!hasUserList(userTo)) {
-                        historyMessagess.put(userTo, createNewUser(messageText, activeUserComponent));
+                        historyMyMessagess.put(userFrom, addMyMessageHistory(userFrom, messageText));
                         dialog.append(messageText + "\n");
                         message.setText("");
-                    } else {
-                        historyMessagess.put(userTo, addMessageHistory(userTo, messageText));
-                        dialog.append(messageText + "\n");
-                        message.setText("");
-                    }
                 }
             }
         });
@@ -135,9 +146,54 @@ public class ChatFrame extends JFrame {
         contentBox.add(activeUserComponent);
         contentBox.add(Box.createHorizontalGlue());
         getContentPane().add(contentBox, BorderLayout.CENTER);
+
+        Thread t = new Thread(new Runnable() {
+            public void run() {
+                while (true) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (!name.equals(activeUserComponent.getSelectedUser())) {
+                        Socket socket = null;
+                        try {
+                            socket = new Socket(iPAddress, activePortServer);
+                            DataOutputStream socketOut = new DataOutputStream(socket.getOutputStream());
+                            DataInputStream socketIn = new DataInputStream(socket.getInputStream());
+                            socketOut.writeInt(3);
+                            socketOut.writeUTF(activeUserComponent.getSelectedUser());
+                            socketOut.writeUTF(name);
+
+                            int countMessages = socketIn.readInt();
+                            if (countMessages != 0) {
+                                for (int i = 0; i < countMessages; i++) {
+                                    String newMessage = socketIn.readUTF();
+                                    dialog.append( newMessage + "\n");
+
+                                    historyMessagess.put(activeUserComponent.getSelectedUser(), addMessageHistory(activeUserComponent.getSelectedUser(), newMessage));
+                                    historyMessagess.put(name, addMessageHistory(activeUserComponent.getSelectedUser(), newMessage));
+                                   // historyMessagess.get(activeUserComponent.getSelectedUser()).add(newMessage);
+                                   // historyMessagess.get(name).add(newMessage);
+                                }
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                socket.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        t.start();
     }
 
-    private boolean hasUserList(String userTo)
+/*  private boolean hasUserList(String userTo)
     {
         boolean hasUser = false;
         for (String userName : historyMessagess.keySet()) {
@@ -147,9 +203,9 @@ public class ChatFrame extends JFrame {
                 hasUser = false;
         }
         return hasUser;
-    }
+    }*/
 
-    private ArrayList<String> createNewUser(String messageText, ActiveUserComponent activeUserComponent) {
+    private ArrayList<String> createNewUser(String messageText) {
         ArrayList<String> history = new ArrayList<>();
         history.add(0, messageText);
         return history;
@@ -157,6 +213,12 @@ public class ChatFrame extends JFrame {
 
     private ArrayList<String> addMessageHistory(String userTo, String messageText) {
         ArrayList<String> history = new ArrayList<>(historyMessagess.get(userTo));
+        history.add(messageText);
+        return history;
+    }
+
+    private ArrayList<String> addMyMessageHistory(String userTo, String messageText) {
+        ArrayList<String> history = new ArrayList<>(historyMyMessagess.get(userTo));
         history.add(messageText);
         return history;
     }

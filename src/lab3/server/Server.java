@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by developer-kc3e on 14.10.16.
@@ -27,8 +28,7 @@ public class Server {
         put("Marina", "1q");
         put("Hleb", "1q");
     }};
-    private static Map<String, LinkedHashMap<String, ArrayList<String>>> historyUnreadMessages = new HashMap<>();
-
+    private static Map<String, LinkedHashMap<String, ArrayList<String>>> historyUnreadMessages = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws IOException {
 
@@ -62,11 +62,30 @@ public class Server {
                             outSocket.writeUTF(userTo);
                             outSocket.writeUTF(messageText);
                         }
-                            if (hasUserToUnreadMessages(userTo)) {
-                                historyUnreadMessages.put(userTo, addUnreadMessageHistory(userTo, userFrom, messageText));
+                        if (hasUserToUnreadMessages(userTo)) {
+                            historyUnreadMessages.put(userTo, addUnreadMessageHistory(userTo, userFrom, messageText));
+                        } else {
+                            historyUnreadMessages.put(userTo, createNewHistoryOneUser(userFrom, messageText));
+                        }
+                    }
+
+                    if (action == thirdAction) {
+                        String userFrom = inSocket.readUTF();
+                        String userTo = inSocket.readUTF();
+                        if (hasUserToUnreadMessages(userTo)) {
+                            if (historyUnreadMessages.get(userTo).containsKey(userFrom)) {
+                                int countMessages = historyUnreadMessages.get(userTo).get(userFrom).size();
+                                outSocket.writeInt(countMessages);
+                                for (int i = 0; i < countMessages; i++) {
+                                    outSocket.writeUTF(historyUnreadMessages.get(userTo).get(userFrom).get(i));
+                                }
+                                historyUnreadMessages.get(userTo).clear();
                             } else {
-                                historyUnreadMessages.put(userTo, createNewHistoryOneUser(userFrom, messageText));
+                                outSocket.writeInt(0);
                             }
+                        } else {
+                            outSocket.writeInt(0);
+                        }
                     }
 
                     if (action == fourthAction) {
@@ -86,12 +105,11 @@ public class Server {
         }
     }
 
-    private static boolean hasUserToUnreadMessages(String userTo)
-    {
-            if (historyUnreadMessages.containsKey(userTo)) {
-                return true;
-            } else
-                return false;
+    private static boolean hasUserToUnreadMessages(String userTo) {
+        if (historyUnreadMessages.containsKey(userTo)) {
+            return true;
+        } else
+            return false;
     }
 
     private static LinkedHashMap<String, ArrayList<String>> createNewHistoryOneUser(String userFrom, String messageText) {
@@ -103,8 +121,8 @@ public class Server {
     }
 
     private static LinkedHashMap<String, ArrayList<String>> addUnreadMessageHistory(String userTo, String userFrom, String messageText) {
-        LinkedHashMap<String, ArrayList<String>> history = new LinkedHashMap(historyUnreadMessages.get(userTo));
-        if (history == null) {
+        LinkedHashMap<String, ArrayList<String>> history = historyUnreadMessages.get(userTo);
+        if (history == null || history.get(userFrom) == null) {
             ArrayList<String> unreadMessages = new ArrayList<>();
             unreadMessages.add(messageText);
             history.put(userFrom, unreadMessages);
@@ -115,4 +133,5 @@ public class Server {
         }
         return history;
     }
+
 }
